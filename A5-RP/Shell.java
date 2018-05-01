@@ -153,13 +153,19 @@ public class Shell {
         System.out.print(sh+"Enter a Username:");
         user = sc.next().trim();
         System.out.print(sh+"Enter a Password:");
-        pass = sc.next().trim();
+        pass = sc.next();
 
         if (isNullOrBlank(user) || isNullOrBlank(pass)){
             System.out.println(sh+"Please enter a username/password.");
             return;
         } else if (usernameAndPassword.containsKey(user)){
             System.out.println(sh+"Username already exists.");
+            return;
+        } else if (!isSecure(pass)){
+            System.out.println(sh+"Password is not strong enough. " +
+                    "Password must contain at least 8 characters, " +
+                    "letters, numbers, a special character, and " +
+                    "cannot have three consecutive characters.");
             return;
         }
 
@@ -173,6 +179,7 @@ public class Shell {
         writer.println(user + " " + h_pass + " " + h_salt);
         writer.close();
 
+        System.out.println(sh+"Username and Password created.");
         importUsers();
     }
 
@@ -260,5 +267,38 @@ public class Shell {
 
         return 0;
     }
+
+    static boolean isSecure(String pass){
+
+        //checks for letter, number, special character, and length >= 8
+        String regex = "(?=.*[!@#\\$\\%\\^\\&\\*\\(\\)\\\\\\[\\]\\?])(?=.*[a-zA-Z])(?=.*[0-9]).{8,}";
+        if (!pass.matches(regex))
+            return false;
+
+        //checking for 3 consecutive letters or numbers
+        char[] asc = pass.toCharArray();
+        int counter = 1;
+        int prev = 0;
+        for(int i = 0; i < asc.length; i++){
+            if ((int)asc[i] == prev + 1){
+                counter++;
+            } else {
+                counter = 1;
+            }
+            prev = asc[i];
+            if(counter == 3)
+                return false;
+        }
+
+        //checking for 3 consecutive special characters
+        if(pass.contains("!@#") || pass.contains("@#$") || pass.contains("#$%") ||
+                pass.contains("$%^") || pass.contains("%^&") || pass.contains("^&*") ||
+                pass.contains("&*(") || pass.contains("*()") || pass.contains("()_") ||
+                pass.contains(")_+"))
+            return false;
+
+        return true;
+
+    }//isSecure
 
 }
